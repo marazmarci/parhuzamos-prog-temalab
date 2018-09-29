@@ -13,6 +13,8 @@ namespace ParallelProgTemalab
         
         public double ElapsedSeconds => elapsedSeconds;
 
+        public MyStopwatch() : this("", false) { }
+
         public MyStopwatch(string name, bool printOnStop = true)
         {
             (this.name, this.printOnStop) = (name, printOnStop);

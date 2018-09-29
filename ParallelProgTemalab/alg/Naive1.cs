@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace ParallelProgTemalab.alg
 {
-    public class Naive1 : MatrixMultiplicationAlgorithm
+    public class Naive1 : MatrixMultAlgorithm
     {
         private Naive1() { }
         public static Naive1 Algorithm = new Naive1();
@@ -14,10 +14,10 @@ namespace ParallelProgTemalab.alg
             Debug.Assert(m1.Size == m2.Size);
             var size = m1.Size;
             var mtx = new Matrix(size);
-            for (int i = 0; i < size; i++)
-                for (int j = 0; j < size; j++)
-                    for (int k = 0; k < size; k++)
-                        mtx[i, j] += m1[i, k] * m2[k, j];
+            for (int row = 0; row < size; row++)
+                for (int col = 0; col < size; col++)
+                    for (int i = 0; i < size; i++)
+                        mtx[row, col] += m1[row, i] * m2[i, col];
             return mtx;
         }
         

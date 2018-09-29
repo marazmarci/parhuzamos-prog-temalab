@@ -35,7 +35,7 @@ namespace ParallelProgTemalab
             return mtx;
         }
         
-        public Matrix Multiply(Matrix other, MatrixMultiplicationAlgorithm alg)
+        public Matrix Multiply(Matrix other, MatrixMultAlgorithm alg)
             => alg.Multiply(this, other);
 
         public override string ToString()

@@ -1,7 +1,7 @@
 namespace ParallelProgTemalab
 {
     
-    public interface MatrixMultiplicationAlgorithm
+    public interface MatrixMultAlgorithm
     {
         
         Matrix Multiply(Matrix m1, Matrix m2);
