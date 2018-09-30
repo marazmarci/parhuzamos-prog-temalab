@@ -1,5 +1,5 @@
 # 1. feladat: mátrix szorzás C# nyelven
 
-![](results/diagram1.png)
-![](results/diagram2.png)
-![](results/diagram3.png)
+![](ParallelProgTemalab/results/diagram1.png)
+![](ParallelProgTemalab/results/diagram2.png)
+![](ParallelProgTemalab/results/diagram3.png)
