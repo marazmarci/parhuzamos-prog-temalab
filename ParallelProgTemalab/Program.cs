@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -79,7 +80,7 @@ namespace ParallelProgTemalab
                     {
                         double time = measureTime(size, alg);
                         streamWriter.WriteLine($"{size};{time}");
-                        Console.WriteLine($"[{i+1}/{algorithms.Count}] {alg.Name}:  {size}");
+                        Console.WriteLine($"[{i+1}/{algorithms.Count}] {alg.Name}:  {size}  {time}");
                     }
                 }
             }
@@ -104,12 +105,28 @@ namespace ParallelProgTemalab
         {
             Matrix m1 = Matrix.GenerateRandomMatrix(size);
             Matrix m2 = Matrix.GenerateRandomMatrix(size);
-            MyStopwatch sw;
-            using (sw = new MyStopwatch())
+            var times = new List<double>();
+            for (int i = 0; i < 9; i++)
             {
-                m1.Multiply(m2, alg);
+                MyStopwatch sw;
+                using (sw = new MyStopwatch())
+                {
+                    m1.Multiply(m2, alg);
+                }
+                times.Add(sw.ElapsedSeconds);
             }
-            return sw.ElapsedSeconds;
+            filterTimeMeasurements(times);
+            double avgTime = times.Sum() / times.Count;
+            return avgTime;
+        }
+
+        private static void filterTimeMeasurements(List<double> times)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                times.Remove(times.Max());
+                times.Remove(times.Min());
+            }
         }
 
 
