@@ -19,6 +19,9 @@ Végső konklúziónak levonhatjuk a mérések alapján, hogy 100x100-as mátrix
 A gépem adatai, amin a mérést végeztem:
 
 i7-6700HQ
+
  4 fizikai mag
+ 
  8 logikai mag
+ 
 8GB RAM
