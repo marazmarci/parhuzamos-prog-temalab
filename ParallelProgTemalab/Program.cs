@@ -33,9 +33,11 @@ namespace ParallelProgTemalab
             Console.WriteLine();
             if (!Int32.TryParse(input, out int size))
                 return;
+
+            
+            runBenchmarksAndWriteToFile(size, "results/ticks");
             
             
-            runBenchmarksAndWriteToFile(size, "results");
             //var results = runBenchmarks(size);
             //printBenchmarkResultsToFile(results, "results");
 
@@ -95,7 +97,6 @@ namespace ParallelProgTemalab
             {
                 foreach (var alg in algorithms)
                     results.Add((alg, size, measureTime(size, alg)));
-                Console.WriteLine(size);
             }
 
             return results;
@@ -105,24 +106,25 @@ namespace ParallelProgTemalab
         {
             Matrix m1 = Matrix.GenerateRandomMatrix(size);
             Matrix m2 = Matrix.GenerateRandomMatrix(size);
-            var times = new List<double>();
-            for (int i = 0; i < 9; i++)
+            var times = new List<long>();
+            for (int i = 0; i < 28; i++)
             {
                 MyStopwatch sw;
                 using (sw = new MyStopwatch())
                 {
                     m1.Multiply(m2, alg);
                 }
-                times.Add(sw.ElapsedSeconds);
+                times.Add(sw.ElapsedTicks);
+                Thread.Sleep(1);
             }
             filterTimeMeasurements(times);
-            double avgTime = times.Sum() / times.Count;
+            double avgTime = (double)times.Sum() / times.Count;
             return avgTime;
         }
 
-        private static void filterTimeMeasurements(List<double> times)
+        private static void filterTimeMeasurements(List<long> times)
         {
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4; i++)
             {
                 times.Remove(times.Max());
                 times.Remove(times.Min());
@@ -142,7 +144,7 @@ namespace ParallelProgTemalab
             {
                 var (alg, size, time) = result;
                 var stream = algResultFileWriters[alg];
-                stream.WriteLine($"{size};{time}");
+                stream.WriteLine($"{size}\t{time}");
             }
 
             

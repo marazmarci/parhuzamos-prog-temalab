@@ -9,10 +9,8 @@
 
 ![](ParallelProgTemalab/results/diagram3.png)
 
-A mérési adataim sajnos nem elég pontosak, hogy legyen olyan mátrixméret, aminél a naiv algoritmus gyorsabb, mint bármelyik párhuzamos.
-Ha a Stopwatch-nek az ElapsedTicks property-jét használtam volna, akkor valószínűleg meg tudtam volna mérni.
-
-Végső konklúziónak levonhatjuk a mérések alapján, hogy 100x100-as mátrixot már biztosan érdemes párhuzamosan szorozni.
+Megismételtem a mérést a milliszekudumos felbontást "tick" felbontásra növelve és így sikerült olyan eredményt kapnom, amiben egy bizonyos mátrixméretig a naiv algoritmusok kicsivel gyorsabbak, mint a párhuzamosak.
+A határ láthatóan 29x29-es mátrixméretnél van, így onnantól érdemes párhuzamosítani.
 
 
 

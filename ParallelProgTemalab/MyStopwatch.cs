@@ -13,7 +13,7 @@ namespace ParallelProgTemalab
         private long elapsedTicks = long.MinValue;
         
         public double ElapsedSeconds => elapsedSeconds;
-        public double ElapsedTicks => elapsedTicks;
+        public long ElapsedTicks => elapsedTicks;
 
         public MyStopwatch() : this("", false) { }
 
