@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\DEV\BME\Témalab\ParallelProgTemalab\Feladat1" t="IncludeFlat">
+      <e p="packages" t="ExcludeRecursive" />
+      <e p="ParallelProgTemalab" t="IncludeRecursive">
+        <e p="alg" t="Include">
+          <e p="Naive1.cs" t="Include" />
+          <e p="Naive2.cs" t="Include" />
+          <e p="Parallel1ThreadPool.cs" t="Include" />
+          <e p="Parallel2TaskParallel.cs" t="Include" />
+        </e>
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="Matrix.cs" t="Include" />
+        <e p="MatrixMultAlgorithm.cs" t="Include" />
+        <e p="MyStopwatch.cs" t="Include" />
+        <e p="obj" t="ExcludeRecursive">
+          <e p="Debug" t="Include">
+            <e p="netcoreapp2.1" t="Include">
+              <e p="ParallelProgTemalab.AssemblyInfo.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="ParallelProgTemalab.csproj" t="IncludeRecursive" />
+        <e p="Program.cs" t="Include" />
+        <e p="results" t="Include">
+          <e p="diagram1.png" t="Include" />
+          <e p="diagram2.png" t="Include" />
+          <e p="diagram3.png" t="Include" />
+          <e p="Naive1.csv" t="Include" />
+          <e p="Naive2.csv" t="Include" />
+          <e p="Parallel1ThreadPool.csv" t="Include" />
+          <e p="Parallel2TaskParallel.csv" t="Include" />
+          <e p="ticks" t="Include">
+            <e p="Naive1.csv" t="Include" />
+            <e p="Naive2.csv" t="Include" />
+            <e p="Parallel1ThreadPool.csv" t="Include" />
+            <e p="Parallel2TaskParallel.csv" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="ParallelProgTemalab.sln" t="IncludeFlat" />
+    </e>
+    <e p="C:\Users\maraz\.Rider2018.2\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\maraz\.Rider2018.2\system\resharper-host\Local\Transient\ReSharperHost\v182\SolutionCaches\_ParallelProgTemalab.-1952976792.00" t="ExcludeRecursive" />
+  </component>
+</project>
