@@ -1,0 +1,1 @@
+A feladatot C++ nyelven a Threading Building Blocks library használatával oldom meg.
