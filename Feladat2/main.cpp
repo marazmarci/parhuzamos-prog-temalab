@@ -27,10 +27,8 @@ int main() {
 	};
 
 	// warm up ThreadPools
-	algorithms[2]->Multiply(Matrix::genRandomMtx(300), Matrix::genRandomMtx(300));
-	algorithms[3]->Multiply(Matrix::genRandomMtx(300), Matrix::genRandomMtx(300));
-
-	std::map<MatrixMultiplicationAlgorithm*, std::map<size_t, unsigned int>> algResults;
+	for (size_t i = 2; i <= 3; i++)
+		algorithms[i]->Multiply(Matrix::genRandomMtx(333), Matrix::genRandomMtx(333));
 
 	std::cout << "size";
 	std::for_each(algorithms.begin(), algorithms.end(), [&](MatrixMultiplicationAlgorithm* alg) {
@@ -44,7 +42,7 @@ int main() {
 		std::cout << size;
 
 		std::for_each(algorithms.begin(), algorithms.end(), [&](MatrixMultiplicationAlgorithm* alg) {
-			algResults[alg] = std::map<size_t, unsigned int>();
+			//results[alg] = std::map<size_t, unsigned int>();
 
 			std::vector<unsigned int> times;
 			for (int i = 0; i < REPETITIONS; i++) {
@@ -67,7 +65,7 @@ int main() {
 			times.erase(times.begin(), times.begin() + FILTER_MIN_MAX);
 			times.erase(times.end() - FILTER_MIN_MAX, times.end());
 			auto time = (unsigned int)(std::accumulate(times.begin(), times.end(), 0L) / (unsigned long)times.size());
-			algResults[alg][size] = time;
+			//results[alg][size] = time;
 			std::cout << ';' << time;
 			//std::cout << alg->name << ", size = " << size << ", time = " << time << std::endl;
 
