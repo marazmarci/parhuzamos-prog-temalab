@@ -15,7 +15,7 @@ Minden mátrixméretre 28-szor mértem le a szorzás idejét, majd a 6 legkisebb
 ![](results/diagram4.png)
 
 
-A határ megint csak 29x29-es mátrixméretre jött ki, így onnantól érdemes párhuzamosítani.
+A párhuzamosítási határ megint csak 29x29-es mátrixméretre jött ki, mint az C#-os megoldásomban.
 
 
 A ThreadPool szálainak száma: (logikai CPU magok száma) + 1
