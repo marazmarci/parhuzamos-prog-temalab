@@ -8,13 +8,12 @@ Az egyszálú és párhuzamos algoritmusok összehasonlítása:
 
 
 Előzetesen arra számítottam, hogy az optimum 1000 körülre fog kijönni, de a grafikonon a minimum 240000 körül van.
-Ez tulajdonképpen 
 
 
 
 ![](results/diagram1_2-1000000.png)
 
-![](results/diagram2_2-100.png)
+![](results/diagram5_2-1000.png)
 
 ![](results/diagram3_200000-300000.png)
 
