@@ -74,36 +74,52 @@ namespace Feladat3 {
             }
 
             if (parallelMergeSort) {
+                resetRandom();
+                double time = measureTime(
+                    () => array = generateRandomSequentialArray(size),
+                    () => ParallelMergeSort.Sort(array, 900)
+                );
+                Console.WriteLine($"ParallelMergeSort finished: {time} ticks");
+                using (var w = new StreamWriter($"results/ParallelMergeSort.txt")) {
+                    w.WriteLine(time);
+                }
+            }
+
+            if (parallelMergeSort) {
                 
                 resetRandom();
                 var fixArray = generateRandomSequentialArray(size);
                 Console.WriteLine("ParallelMergeSort starting...");
                 Dictionary<int, double> results = new Dictionary<int, double>();
                 
-                var parallelThresholds = new HashSet<int>();
+                var parallelThresholds = new SortedSet<int>();
                 var ranges = new List<IEnumerable<int>> {
-                    CustomRange(1, 100, 1),
+                    CustomRange(2, 100, 1),
                     CustomRange(100, 1_000, 10),
-                    CustomRange(1_000, 2000, 50),
-                    CustomRange(1_000, 1_000_000, 1000),
-                    CustomRange(240_000, 260_000, 100),
-                    CustomRange(249_000, 251_000, 25),
-                    CustomRange(249_900, 250_100, 5),
+                    CustomRange(1_000, 3000, 50),
+                    //CustomRange(1_000, 2_000, 100),
+                    CustomRange(3_000, 10_000, 1000),
+                    CustomRange(10_000, 50_000, 10000),
+                    CustomRange(50_000, 1_000_000, 50000),
+                    CustomRange(240_000, 260_000, 1000),
+                    CustomRange(249_900, 250_100, 50),
                     CustomRange(249_990, 250_010, 1),
-                    CustomRange(490_000, 510_000, 100),
-                    CustomRange(5_200_000, 6_000_000, 10000),
+                    CustomRange(490_000, 510_000, 1000),
+                    //CustomRange(5_200_000, 6_000_000, 10000),
                 };
                 foreach (var range in ranges)
                     foreach (var i in range)
                         parallelThresholds.Add(i);
+
+                Console.WriteLine(parallelThresholds.Count);
                 
                 using (var fileWriter = new StreamWriter($"results/ParallelMergeSort.csv")) {
                     foreach (int i in parallelThresholds) { // for (int i = 1000; i <= size && i < 10000000; i+=1000) {
                         int parallelThreshold = i;
                         double time = measureTime(
                             () => Array.Copy(fixArray, array, fixArray.Length),
-                            () => ParallelMergeSort.Sort(array, parallelThreshold),
-                            10, 2
+                            () => new MergeSortHelper<int>(parallelThreshold).MergeSort(array, 0, array.Length - 1, true), //ParallelMergeSort.Sort(array, parallelThreshold),
+                            20, 4
                         );
                         results.Add(parallelThreshold, time);
                         Console.WriteLine($"parallelThreshold = {parallelThreshold} finished: {time} ticks");
@@ -186,7 +202,7 @@ namespace Feladat3 {
         }
         
         // Forrás: https://stackoverflow.com/a/4142644/6347943
-        public static IEnumerable<int> CustomRange(int start, int endInclusive, int step = 1) {
+        public static IEnumerable<int> CustomRange(int start, int endInclusive, int step) {
             for (int i = start; i <= endInclusive; i += step)
                 yield return i;
         }

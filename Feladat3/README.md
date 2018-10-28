@@ -1,24 +1,25 @@
-A feladatot c++ nyelven végül a Parallel Patterns Library használatával oldottam meg, nem a Threading Building Blocks-szal.
+# 3. feladat: tömb rendezés parallel merge sort alrogitmussal C# nyelven
 
+Az összes mérést 1 000 000 elemű listával végeztem.
 
-# 2. feladat: mátrix szorzás választott nyelven
-
-Minden mátrixméretre 28-szor mértem le a szorzás idejét, majd a 6 legkisebb és legnagyobb értéket eldobtam.
-
-
-![](results/diagram1.png)
-
-![](results/diagram2.png)
-
-![](results/diagram3.png)
+Az egyszálú és párhuzamos algoritmusok összehasonlítása:
 
 ![](results/diagram4.png)
 
 
-A párhuzamosítási határ megint csak 29x29-es mátrixméretre jött ki, mint az C#-os megoldásomban.
+Előzetesen arra számítottam, hogy az optimum 1000 körülre fog kijönni, de a grafikonon a minimum 240000 körül van.
+Ez tulajdonképpen 
 
 
-A ThreadPool szálainak száma: (logikai CPU magok száma) + 1
+
+![](results/diagram1_2-1000000.png)
+
+![](results/diagram2_2-100.png)
+
+![](results/diagram3_200000-300000.png)
+
+
+
 
 A gépem adatai, amin a mérést végeztem:
 
