@@ -27,6 +27,9 @@ Ebből kifolyólag csak az ezen számok kicsi környezetében lévő parallelThr
 parallelThreshold: az a tömbméret, ami alatt már egy szálú merge sort fut le.
 
 
+### Az optimum parallelThreshold = 17-re jött ki
+
+
 A gépem adatai, amin a mérést végeztem:
 
 - i7-6700HQ
