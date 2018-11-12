@@ -11,7 +11,7 @@ TODO
 
 Rájöttem, hogy a képen látható length változó csak kevés fajta értéket vehet fel, és ezek az értékek a rendezendő tömb hosszától függenek.
 
-(1, 2, 3, 6, 7, 14, 15, 29, 30, 60, 61, 121, 122, 243, 244, 487, 488, 975, 976, 1952, 1953, 3905, 3906, 7811, 7812, 15624, 31249, 62499, 124999, 249999, 499999)
+(1000000 méretű tömb esetén: 1, 2, 3, 6, 7, 14, 15, 29, 30, 60, 61, 121, 122, 243, 244, 487, 488, 975, 976, 1952, 1953, 3905, 3906, 7811, 7812, 15624, 31249, 62499, 124999, 249999, 499999)
 
 (Ez amiatt van, mert az algoritmus mindig felezi az intervallumokat.)
 
