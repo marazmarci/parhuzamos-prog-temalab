@@ -6,7 +6,7 @@ Az összes mérést 1 000 000 elemű listával végeztem.
 
 Az egyszálú és párhuzamos algoritmusok összehasonlítása:
 
-![](results/sequential_vs_parallel.png)
+![](results/singlethread_vs_parallel.png)
 
 ![](results/parallelThreshold_code.png)
 
