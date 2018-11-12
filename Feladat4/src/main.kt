@@ -15,7 +15,7 @@ fun main() {
     val size = scanner.nextIntLineOrDefault(1_000_000)
     println()
 
-    print("Melyik algoritmus? (0: mindegyik, 1: QuickSort, 2: MergeSort, 3: ParallelMergeSortInPlace)  ")
+    print("Melyik algoritmus? (0: mindegyik, 1: QuickSort, 2: MergeSort, 3: ParallelMergeSort)  ")
     val alg = scanner.nextIntLineOrDefault(0)
     println()
 
@@ -48,13 +48,13 @@ fun main() {
         val time = measureNanoSeconds(arrayInitializerLambda) {
             sort.parallelMergeSort(it, 8192)
         }
-        println("ParallelMergeSortInPlace (single run) finished: ${time.nsToMs()} ms")
-        FileWriter("results\\single_run\\ParallelMergeSortInPlace.txt").use { it.write("${time.nsToMs()}") }
+        println("ParallelMergeSort (single run) finished: ${time.nsToMs()} ms")
+        FileWriter("results\\single_run\\ParallelMergeSort.txt").use { it.write("${time.nsToMs()}") }
     }
 
     if (parallelMergeSort) {
         val fixArray = arrayInitializerLambda()
-        println("ParallelMergeSortInPlace starting...")
+        println("ParallelMergeSort starting...")
         val results = mutableMapOf<Int,Long>()
 
         val parallelThresholds = TreeSet<Int>().apply {
