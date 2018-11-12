@@ -6,7 +6,7 @@ Az összes mérést 1 000 000 elemű listával végeztem.
 
 Az egyszálú és párhuzamos algoritmusok összehasonlítása:
 
-![](results/sequential_vs_parallel.png)
+![](results/singlethread_vs_parallel.png)
 
 ![](results/parallelThreshold_code.png)
 
@@ -25,6 +25,9 @@ Ebből kifolyólag csak az ezen számok kicsi környezetében lévő parallelThr
 (az X tengely logaritmikusan skálázott)
 
 parallelThreshold: az a tömbméret, ami alatt már egy szálú merge sort fut le.
+
+
+### Az optimum parallelThreshold = 17-re jött ki
 
 
 A gépem adatai, amin a mérést végeztem:
