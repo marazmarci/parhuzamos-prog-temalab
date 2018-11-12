@@ -1,6 +1,5 @@
 package sort
 import java.util.concurrent.*
-import kotlin.math.max
 
 
 fun mergeSort(array: IntArray)
@@ -23,45 +22,38 @@ private fun mergeSort(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntA
         val middle = (leftStart + rightEnd) / 2
         mergeSort(array, leftStart, middle, temp)
         mergeSort(array, middle + 1, rightEnd, temp)
-        mergeHalves(array, leftStart, rightEnd, temp)
+        merge(array, leftStart, rightEnd, temp)
     }
 }
 
-private fun parallelMergeSort(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntArray, parallelThreshold: Int) {
-    if (rightEnd > leftStart) {
-        val length = rightEnd - leftStart
-        if (length >= parallelThreshold) {
-            val middle = (leftStart + rightEnd) / 2
-            forkJoinPool.invokeAll(listOf(
-                Callable { parallelMergeSort(array, leftStart, middle, temp, parallelThreshold) },
-                Callable { parallelMergeSort(array, middle + 1, rightEnd, temp, parallelThreshold) }
-            ))
-            mergeHalves(array, leftStart, rightEnd, temp)
+private class ParallelMergeSort(
+    val a: IntArray,
+    val l: Int,
+    val r: Int,
+    val temp: IntArray,
+    val parallelThreshold: Int
+) : RecursiveAction() {
+
+    override fun compute() {
+        if (r <= l)
+            return
+        if (r - l > parallelThreshold) {
+            val m = (l + r) / 2
+            invokeAll(
+                ParallelMergeSort(a, l, m, temp, parallelThreshold), // left
+                ParallelMergeSort(a, m + 1, r, temp, parallelThreshold) // right
+            )
+            //forkJoinPool.invoke(ParallelMergeInPlace(a, l, middle, r))
+            //invokeAll(ParallelMergeInPlace(a, l, m, r))
+            merge(a, l, r, temp)
         } else {
-            mergeSort(array, leftStart, rightEnd, temp)
+            mergeSort(a, l, r, temp)
         }
     }
+
 }
 
-private fun parallelMergeSortInPlace(array: IntArray, leftStart: Int, rightEnd: Int, parallelThreshold: Int) {
-    if (rightEnd > leftStart) {
-        val length = rightEnd - leftStart
-        if (length >= parallelThreshold) {
-            val middle = (leftStart + rightEnd) / 2
-            forkJoinPool.invokeAll(listOf(
-                Callable { parallelMergeSortInPlace(array, leftStart, middle, parallelThreshold) },
-                Callable { parallelMergeSortInPlace(array, middle + 1, rightEnd, parallelThreshold) }
-            ))
-            mergeInPlace(array, leftStart, middle, rightEnd)
-        } else {
-            mergeSortInPlace(array, leftStart, rightEnd)
-        }
-    }
-}
-
-
-
-private fun mergeHalves(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntArray) {
+private fun merge(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntArray) {
     val leftEnd = (rightEnd + leftStart) / 2
     val rightStart = leftEnd + 1
     val size = rightEnd - leftStart + 1
@@ -89,6 +81,41 @@ private fun mergeHalves(array: IntArray, leftStart: Int, rightEnd: Int, temp: In
 
 }
 
+/*
+private fun parallelMergeSort(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntArray, parallelThreshold: Int) {
+    if (rightEnd > leftStart) {
+        val length = rightEnd - leftStart
+        if (length >= parallelThreshold) {
+            val middle = (leftStart + rightEnd) / 2
+            forkJoinPool.invokeAll(listOf(
+                Callable { parallelMergeSort(array, leftStart, middle, temp, parallelThreshold) },
+                Callable { parallelMergeSort(array, middle + 1, rightEnd, temp, parallelThreshold) }
+            ))
+            merge(array, leftStart, rightEnd, temp)
+        } else {
+            mergeSort(array, leftStart, rightEnd, temp)
+        }
+    }
+}
+
+
+private fun parallelMergeSortInPlace(array: IntArray, leftStart: Int, rightEnd: Int, parallelThreshold: Int) {
+    if (rightEnd > leftStart) {
+        val length = rightEnd - leftStart
+        if (length >= parallelThreshold) {
+            val middle = (leftStart + rightEnd) / 2
+            forkJoinPool.invokeAll(listOf(
+                Callable { parallelMergeSortInPlace(array, leftStart, middle, parallelThreshold) },
+                Callable { parallelMergeSortInPlace(array, middle + 1, rightEnd, parallelThreshold) }
+            ))
+            mergeInPlace(array, leftStart, middle, rightEnd)
+        } else {
+            mergeSortInPlace(array, leftStart, rightEnd)
+        }
+    }
+}
+
+
 private fun mergeSortInPlace(a: IntArray, l: Int, r: Int) {
     if (r <= l)
         return
@@ -97,37 +124,7 @@ private fun mergeSortInPlace(a: IntArray, l: Int, r: Int) {
     mergeSortInPlace(a, m + 1, r)
     mergeInPlace(a, l, m, r)
 }
-
-
-private class ParallelMergeSort(
-    val a: IntArray,
-    val l: Int,
-    val r: Int,
-    val temp: IntArray,
-    val parallelThreshold: Int
-) : RecursiveAction() {
-
-
-    override fun compute() {
-        if (r <= l)
-            return
-        if (r - l > parallelThreshold) {
-            val m = (l + r) / 2
-            invokeAll(
-                ParallelMergeSort(a, l, m, temp, parallelThreshold), // left
-                ParallelMergeSort(a, m + 1, r, temp, parallelThreshold) // right
-            )
-            //forkJoinPool.invoke(ParallelMergeInPlace(a, l, middle, r))
-            //quietlyInvoke()
-            //invoke()
-            //invokeAll(ParallelMergeInPlace(a, l, m, r))
-            mergeHalves(a, l, r, temp)
-        } else {
-            mergeSort(a, l, r, temp)
-        }
-    }
-
-}
+*/
 
 
 /* Forrás:
@@ -135,6 +132,7 @@ private class ParallelMergeSort(
      http://www.drdobbs.com/parallel/parallel-in-place-merge-sort/240169094?pgno=2
  */
 
+/*
 private class ParallelMergeSortInPlace(
     val a: IntArray,
     val l: Int,
@@ -142,7 +140,6 @@ private class ParallelMergeSortInPlace(
     //val temp: IntArray,
     val parallelThreshold: Int
 ) : RecursiveAction() {
-
 
     override fun compute() {
         if (r <= l)
@@ -157,7 +154,7 @@ private class ParallelMergeSortInPlace(
             //quietlyInvoke()
             //invoke()
             invokeAll(ParallelMergeInPlace(a, l, m, r))
-            //mergeHalves(a, l, r, temp)
+            //merge(a, l, r, temp)
         } else {
             //mergeSort(a, l, r, temp)
             mergeSortInPlace(a, l, r)
@@ -169,7 +166,7 @@ private class ParallelMergeSortInPlace(
 
 private fun myBinarySearch(value: Int, array: IntArray, left: Int, right: Int): Int {
     var low = left
-    var high = max(left, right + 1)
+    var high = kotlin.math.max(left, right + 1)
     while (low < high) {
         val mid = (low + high) / 2
         if (value <= array[mid]) {
@@ -180,6 +177,7 @@ private fun myBinarySearch(value: Int, array: IntArray, left: Int, right: Int): 
     }
     return high
 }
+
 
 private fun mergeInPlace(t: IntArray, l: Int, m: Int, r: Int) {
     val length1 = m - l + 1
@@ -205,6 +203,7 @@ private fun mergeInPlace(t: IntArray, l: Int, m: Int, r: Int) {
         mergeInPlace(t, q3 + 1, q1, r)
     }
 }
+*/
 
 /* Forrás:
      http://www.drdobbs.com/parallel/parallel-in-place-merge/240008783?pgno=1
@@ -213,6 +212,7 @@ private fun mergeInPlace(t: IntArray, l: Int, m: Int, r: Int) {
      http://www.drdobbs.com/parallel/parallel-in-place-merge/240008783?pgno=4
  */
 
+/*
 private class ParallelMergeInPlace(
     val t: IntArray,
     val l: Int,
@@ -253,6 +253,7 @@ private class ParallelMergeInPlace(
     }
 
 }
+*/
 
 
 /* Forrás:
@@ -261,6 +262,7 @@ private class ParallelMergeInPlace(
      http://www.drdobbs.com/parallel/benchmarking-block-swapping-algorithms/232900395?pgno=3
  */
 
+/*
 private fun blockSwapGriesAndMills(a: IntArray, l: Int, m: Int, r: Int) {
     val rotdist = m - l + 1
     val n = r - l + 1
@@ -280,6 +282,7 @@ private fun blockSwapGriesAndMills(a: IntArray, l: Int, m: Int, r: Int) {
     }
     swapTwoSequentialSubArrays(a, p - i, p, i)
 }
+
 
 private fun blockExchangeJugglingBentley(a: IntArray, l: Int, m: Int, r: Int) {
     val uLength = m - l + 1
@@ -306,6 +309,7 @@ private fun blockExchangeJugglingBentley(a: IntArray, l: Int, m: Int, r: Int) {
 }
 
 
+
 private fun swapTwoSequentialSubArrays(x: IntArray, a: Int, b: Int, m: Int) {
     var mm = m
     var aa = a
@@ -313,6 +317,7 @@ private fun swapTwoSequentialSubArrays(x: IntArray, a: Int, b: Int, m: Int) {
     while (mm-- > 0)
         swapInArray(x, aa++, bb++)
 }
+
 
 private fun gcd(ii: Int, jj: Int): Int {
     var i = ii
@@ -327,3 +332,4 @@ private fun gcd(ii: Int, jj: Int): Int {
     }
     return i
 }
+*/
