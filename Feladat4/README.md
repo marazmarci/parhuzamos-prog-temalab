@@ -1,4 +1,4 @@
-# 4. feladat: tömb rendezés parallel merge sort alrogitmussal választott (Kotlin?) nyelven
+# 4. feladat: tömb rendezés parallel merge sort alrogitmussal választott (Kotlin) nyelven
 
 Az összes mérést 1 000 000 elemű listával végeztem.
 
