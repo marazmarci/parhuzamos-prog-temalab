@@ -10,7 +10,8 @@ TODO
 ```
 private fun parallelMergeSort(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntArray, parallelThreshold: Int) {
     if (rightEnd > leftStart) {
-        ```if (rightEnd - leftStart >= parallelThreshold) {```
+```     if (rightEnd - leftStart >= parallelThreshold) {
+```
             val middle = (leftStart + rightEnd) / 2
             forkJoinPool.invokeAll(listOf(
                 Callable { parallelMergeSort(array, leftStart, middle, temp, parallelThreshold) },
