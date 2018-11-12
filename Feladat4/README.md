@@ -6,10 +6,9 @@ Az összes mérést 1 000 000 elemű listával végeztem.
 
 Az egyszálú és párhuzamos algoritmusok összehasonlítása:
 
-![](sequential_vs_parallel.png)
+![](results/sequential_vs_parallel.png)
 
-
-![](parallelThreshold_code.png)
+![](results/parallelThreshold_code.png)
 
 Rájöttem, hogy a képen látható length változó csak kevés fajta értéket vehet fel, és ezek az értékek a rendezendő tömb hosszától függenek.
 
