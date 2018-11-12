@@ -24,24 +24,21 @@ private fun mergeSort(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntA
     }
 }
 
-private fun parallelMergeSort(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntArray, parallelThreshold: Int) {
-    if (rightEnd > leftStart) {
-        if (rightEnd - leftStart >= parallelThreshold) {
-            val middle = (leftStart + rightEnd) / 2
-            /*val job1 = executorService.submit { parallelMergeSort(array, leftStart, middle, temp, parallelThreshold) }
-            val job2 = executorService.submit { parallelMergeSort(array, middle + 1, rightEnd, temp, parallelThreshold) }
-            job1.get()
-            job2.get()*/
-            forkJoinPool.invokeAll(listOf(
-                Callable { parallelMergeSort(array, leftStart, middle, temp, parallelThreshold) },
-                Callable { parallelMergeSort(array, middle + 1, rightEnd, temp, parallelThreshold) }
-            ))
-            mergeHalves(array, leftStart, rightEnd, temp)
-        } else {
-            mergeSort(array, leftStart, rightEnd, temp)
+    private fun parallelMergeSort(array: IntArray, leftStart: Int, rightEnd: Int, temp: IntArray, parallelThreshold: Int) {
+        if (rightEnd > leftStart) {
+            val length = rightEnd - leftStart
+            if (length >= parallelThreshold) {
+                val middle = (leftStart + rightEnd) / 2
+                forkJoinPool.invokeAll(listOf(
+                    Callable { parallelMergeSort(array, leftStart, middle, temp, parallelThreshold) },
+                    Callable { parallelMergeSort(array, middle + 1, rightEnd, temp, parallelThreshold) }
+                ))
+                mergeHalves(array, leftStart, rightEnd, temp)
+            } else {
+                mergeSort(array, leftStart, rightEnd, temp)
+            }
         }
     }
-}
 
 
 // TODO parallelize / in-place
