@@ -1,10 +1,12 @@
 # 4. feladat: tömb rendezés parallel merge sort alrogitmussal választott (Kotlin) nyelven
 
+Az algoritmust a javasolt ExecutorService helyett a ForkJoinPool és a RecursiveAction beépített Java osztályokkal implementáltam. A ForkJoinPool fork-join feladatokra van optimalizálva, mint ahogy az a nevéből is látszik. A RecursiveAction pedig a ForkJoinTask osztályból származik le, és rekurzív párhuzamos algoritmusokra van optimalizálva. Először ExecutorService-szel írtam meg, és akkor kb. 2x annyi ideig futott az algoritmus.
+
 Az összes mérést 1 000 000 elemű listával végeztem.
 
 Az egyszálú és párhuzamos algoritmusok összehasonlítása:
 
-TODO
+![](sequential_vs_parallel.png)
 
 
 ![](parallelThreshold_code.png)
@@ -17,9 +19,13 @@ Rájöttem, hogy a képen látható length változó csak kevés fajta értéket
 
 Ebből kifolyólag csak az ezen számok kicsi környezetében lévő parallelThreshold értékekre futtattam a benchmarkot, mert pl. egy tetszőleges 1000-es értékre ugyanazt az eredményt kapnám, mint a 976-ra, vagy az 1951-re.
 
-(ezeket a számokat nem hardcode-oltam bele a programba, hanem kiszámoltattam vele.)
+(ezeket a számokat természetesen nem hardcode-oltam bele a programba, hanem kiszámoltattam vele, hogy ne csak 1000000-s tömbméretre működjön.)
 
-![](results/futasidok.png)
+![](results/paralellmergesort_benchmark.png)
+
+(az X tengely logaritmikusan skálázott)
+
+parallelThreshold: az a tömbméret, ami alatt már egy szálú merge sort fut le.
 
 
 A gépem adatai, amin a mérést végeztem:
