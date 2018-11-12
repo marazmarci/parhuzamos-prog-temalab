@@ -52,7 +52,7 @@ private fun partition(array: IntArray, start: Int, end: Int, pivot: Int): Int {
     return storeIdx
 }
 
-private fun swapInArray(array: IntArray, i1: Int, i2: Int) {
+fun swapInArray(array: IntArray, i1: Int, i2: Int) {
     val temp = array[i1]
     array[i1] = array[i2]
     array[i2] = temp
