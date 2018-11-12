@@ -1,4 +1,5 @@
 import java.io.FileWriter
+import java.lang.Exception
 import java.util.*
 
 
@@ -14,7 +15,7 @@ fun main() {
     val size = scanner.nextIntLineOrDefault(1_000_000)
     println()
 
-    print("Melyik algoritmus? (0: mindegyik, 1: QuickSort, 2: MergeSort, 3: ParallelMergeSort)  ")
+    print("Melyik algoritmus? (0: mindegyik, 1: QuickSort, 2: MergeSort, 3: ParallelMergeSortInPlace)  ")
     val alg = scanner.nextIntLineOrDefault(0)
     println()
 
@@ -47,26 +48,26 @@ fun main() {
         val time = measureNanoSeconds(arrayInitializerLambda) {
             sort.parallelMergeSort(it, 8192)
         }
-        println("ParallelMergeSort (single run) finished: ${time.nsToMs()} ms")
-        FileWriter("results\\single_run\\ParallelMergeSort.txt").use { it.write("${time.nsToMs()}") }
+        println("ParallelMergeSortInPlace (single run) finished: ${time.nsToMs()} ms")
+        FileWriter("results\\single_run\\ParallelMergeSortInPlace.txt").use { it.write("${time.nsToMs()}") }
     }
 
     if (parallelMergeSort) {
         val fixArray = arrayInitializerLambda()
-        println("ParallelMergeSort starting...")
+        println("ParallelMergeSortInPlace starting...")
         val results = mutableMapOf<Int,Long>()
 
         val parallelThresholds = TreeSet<Int>().apply {
             var n1 = size - 1 // 999_999
             var n2 = n1
-            do {
+            while (n1 > 10 && n2 > 10) {
                 n1 /= 2
                 n2 = (n2-1) / 2
                 for (eps in -3..3) {
                     add(n1 + eps)
                     add(n2 + eps)
                 }
-            } while (n1 > 500 && n2 > 500)
+            }
         }
 
 
@@ -89,17 +90,30 @@ fun main() {
 
 }
 
+fun isIntArraySorted(array: IntArray): Boolean {
+    for (i in 1 until array.size) {
+        if (array[i - 1] > array[i]) {
+            println("" + array[i-1] + " vs " + array[i] + " (at i = $i)")
+            return false
+        }
+    }
+    return true
+}
 
 
-fun <T>measureNanoSeconds(init: () -> T, repeats: Int = 16, filterRepeats: Int = 4, toMeasure: (T) -> Unit): Long {
+fun measureNanoSeconds(init: () -> IntArray, repeats: Int = 16, filterRepeats: Int = 4, toMeasure: (IntArray) -> Unit): Long {
     val times = ArrayList<Long>(repeats)
+    var array: IntArray? = null
     repeat(repeats) {
-        val array = init.invoke()
+        val a = init.invoke()
         val time = stopwatch {
-            toMeasure.invoke(array)
+            toMeasure.invoke(a)
         }
         times.add(time)
+        array = a
     }
+    if (!isIntArraySorted(array!!))
+        throw Exception("Array is not sorted correctly!")
     times.filterTimeMeasurements(filterRepeats)
     return times.sum() / times.size
 }

@@ -43,7 +43,7 @@ private fun partition(array: IntArray, start: Int, end: Int, pivot: Int): Int {
     swapInArray(array, pivot, end)
     var storeIdx = start
     for (i in start until end) {
-        if (array[i] < pivotVal) { // array[i].CompareTo(pivotVal) < 0
+        if (array[i] < pivotVal) { // a[i].CompareTo(pivotVal) < 0
             swapInArray(array, i, storeIdx)
             storeIdx++
         }
