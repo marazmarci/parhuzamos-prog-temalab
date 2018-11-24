@@ -1,5 +1,5 @@
 namespace Feladat5 {
-    public class TaskScheduler {
+    public class TaskConsumer {
         
     }
 }
