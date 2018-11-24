@@ -4,21 +4,12 @@ using System.Collections.Generic;
 
 namespace Feladat5 {
     
-    internal class Node<T> {
-        public T Data { get; set; }
-        public Node<T> Next { get; set; }
-        public Node(T data) {
-            this.Data = data;
-        }
-    }
-    
     public class LinkedQueue<T> {
         
-        internal Node<T> head;
-        internal Node<T> tail;
+        private Node<T> head;
+        private Node<T> tail;
         private int count = 0;
-        
-        public LinkedQueue() { }
+        public int Count => count;
         
         public void Enqueue(T data) {
             var newNode = new Node<T>(data);
@@ -40,7 +31,7 @@ namespace Feladat5 {
 
         public T Peek() {
             if (head == null)
-                throw new Exception("Queue is Empty");
+                throw new Exception("LinkedQueue is empty");
             return head.Data;
         }
 
@@ -62,7 +53,14 @@ namespace Feladat5 {
             head = tail = null;
         }
         
-        public int Count => this.count;
+        
+        private class Node<T> {
+            public T Data { get; set; }
+            public Node<T> Next { get; set; }
+            public Node(T data) {
+                this.Data = data;
+            }
+        }
         
     }
     

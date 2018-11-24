@@ -5,6 +5,8 @@ namespace Feladat5 {
     
     internal class Program {
         
+        // TODO join scheduler, then stop
+        
         public static void Main(string[] args) {
             var scheduler = new TaskScheduler(onTaskFinished);
             scheduler.AddTask(new RandomAvgTask(1,1011));
