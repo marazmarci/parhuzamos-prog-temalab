@@ -6,4 +6,4 @@
 
 ### [4. feladat: tömb rendezés parallel merge sort alrogitmussal választott (Kotlin) nyelven](https://github.com/marazmarci/parhuzamos-prog-temalab/tree/master/Feladat4)
 
-### [~~5. feladat: feladat ütemezésre szolgáló adatstruktúra~~](https://github.com/marazmarci/parhuzamos-prog-temalab/tree/master/Feladat5)
+### [5. feladat: feladat ütemezésre szolgáló adatstruktúra](https://github.com/marazmarci/parhuzamos-prog-temalab/tree/master/Feladat5)
