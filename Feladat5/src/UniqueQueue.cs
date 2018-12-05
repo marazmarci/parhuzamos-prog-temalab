@@ -4,12 +4,12 @@ namespace Feladat5 {
     
     public class UniqueQueue<T> {
 
-        private HashSet<T> hashSet;
-        private LinkedQueue<T> queue;
+        private readonly HashSet<T> hashSet;
+        private readonly Queue<T> queue;
 
         public UniqueQueue() {
             hashSet = new HashSet<T>();
-            queue = new LinkedQueue<T>();
+            queue = new Queue<T>();
         }
 
         public int Count => hashSet.Count;
@@ -21,8 +21,9 @@ namespace Feladat5 {
 
         public bool Contains(T item) => hashSet.Contains(item);
 
-        public void Enqueue(T item) {
-            if (hashSet.Add(item))
+        public void EnqueueIfNotContainsAlready(T item) {
+            bool added = hashSet.Add(item);
+            if (added)
                 queue.Enqueue(item);
         }
 
@@ -32,18 +33,20 @@ namespace Feladat5 {
             return item;
         }
 
-        public void Remove(T item) {
+        /*
+        public bool Remove(T item) {
             bool found = hashSet.Remove(item);
             if (found) {
-                // TODO remove from queue
+                count--;
                 queue.Remove(item);
             }
+            return found;
         }
+        */
 
         public T Peek() => queue.Peek();
 
-        //public IEnumerator<T> GetEnumerator() => queue.GetEnumerator();
-        //System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => queue.GetEnumerator();
-        
+        public bool IsEmpty() => Count == 0;
+
     }
 }
