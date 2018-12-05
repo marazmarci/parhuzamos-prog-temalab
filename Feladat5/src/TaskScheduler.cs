@@ -27,9 +27,12 @@ namespace Feladat5 {
         private readonly List<TaskConsumer> consumers = new List<TaskConsumer>();
         
         private int unfinishedTaskCount = 0;
+        private int finishedTaskCount = 0;
+        public int FinishedTaskCount { get { lock (lockObj) { return finishedTaskCount; } } }
+
         private int taskIdCounter = 0;
         private bool stopped = true;
-        
+
 
         public TaskScheduler(Action<Task> onTaskAdded, Action<Task> onTaskStarted, Action<Task> onTaskFinished, Action<Task,Exception> onTaskFailed) {
             this.onTaskAdded = onTaskAdded;
@@ -43,12 +46,12 @@ namespace Feladat5 {
             lock (lockObj) {
                 Assert(stopped);
                 Assert(consumers.Count == 0);
-            }
-            stopped = false;
-            for (int i = 0; i < n; i++) {
-                var consumer = new TaskConsumer(this, i);
-                consumers.Add(consumer);
-                consumer.Start();
+                stopped = false;
+                for (int i = 0; i < n; i++) {
+                    var consumer = new TaskConsumer(this, i);
+                    consumers.Add(consumer);
+                    consumer.Start();
+                }
             }
         }
         
@@ -134,6 +137,7 @@ namespace Feladat5 {
             lock (lockObj) {
                 AssertTaskRunning(task);
                 RemoveTask(task);
+                finishedTaskCount++;
                 lock (outsideWorldLock) {
                     onTaskFinished(task);
                     unfinishedTaskCount--;
@@ -237,15 +241,16 @@ namespace Feladat5 {
             }
         }
 
-        private void Join() {
+        private void Join(bool useJoinLockObj = true) {
             Assert(!stopped);
             lock (joinLockObj) {
                 lock (lockObj) {
                     Assert(unfinishedTaskCount >= 0);
                     if (unfinishedTaskCount == 0)
                         return;
-                } 
-                WaitLockObj(useJoinLockObj: true);
+                }
+                if (useJoinLockObj)
+                    WaitLockObj(useJoinLockObj: true);
             }
         }
 
@@ -261,6 +266,17 @@ namespace Feladat5 {
             Assert(!stopped);
             stopped = true;
             PulseLockObj(pulseAll: true);
+        }
+        
+        public void AbortConsumerThreads() {
+            lock (lockObj) {
+                unfinishedTaskCount = 0;
+                foreach (var consumer in consumers)
+                    consumer.Abort();
+            }
+            foreach (var consumer in consumers)
+                consumer.Join();
+            consumers.Clear();
         }
 
 
@@ -286,19 +302,21 @@ namespace Feladat5 {
                                 scheduler.OnTaskStarted(task);
                                 task.Run();
                                 scheduler.OnTaskFinished(task);
+                                task = null;
                             } else {
                                 running = false;
                             }
                         } catch(Exception e) {
+                            if (e is ThreadAbortException)
+                                throw e;
                             scheduler.OnTaskFailed(task, e);
                         }
                     }
                 } catch (ThreadAbortException e) {
                     Thread.ResetAbort();
-                    if (task != null)
+                    if (task != null) {
                         scheduler.OnTaskFailed(task, e);
-                    else
-                        Console.Error.WriteLine(e.Message);
+                    }
                 }
                 
             }
@@ -312,6 +330,7 @@ namespace Feladat5 {
 
             public void Join() => thread.Join();
 
+            public void Abort() => thread.Abort();
         }
 
     }
