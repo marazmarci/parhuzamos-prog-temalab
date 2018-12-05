@@ -45,7 +45,8 @@
     <ItemGroup>
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="src\Deque.cs" />
-        <Compile Include="src\UnitTests.cs" />
+        <Compile Include="src\ScheduleValidator.cs" />
+        <Compile Include="src\Tests.cs" />
         <Compile Include="src\RandomAvgTask.cs" />
         <Compile Include="src\Task.cs" />
         <Compile Include="src\TaskLogEntry.cs" />
