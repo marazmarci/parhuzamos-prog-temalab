@@ -11,13 +11,11 @@ using NUnit.Framework;
 namespace Feladat5 {
 
     [TestFixture]
-    public class UnitTests {
+    public class SchedulerTests {
 
-        private const int REPEATS = 50;
-
-        private static int BLUE = 1;
-        private static int GREEN = 2;
-        private static int RED = 3;
+        public static int BLUE = 1;
+        public static int GREEN = 2;
+        public static int RED = 3;
         
         private static bool printLog = false;
         
@@ -40,7 +38,7 @@ namespace Feladat5 {
         [Test]
         public void TheExampleTasks1() {
             int nConsumers = 2;
-            for (int repeat = 1; repeat <= REPEATS; repeat++) {
+            for (int repeat = 1; repeat <= 50; repeat++) {
                 Assert.True(RunTasksAndValidateSchedule(nConsumers, exampleTasks));
             }
         }
@@ -51,7 +49,7 @@ namespace Feladat5 {
          */
         [Test]
         public void TheExampleTasks2() {
-            for (int repeat = 1; repeat <= REPEATS; repeat++)
+            for (int repeat = 1; repeat <= 50; repeat++)
             for (int nConsumers = 1; nConsumers <= 10; nConsumers++)
                 Assert.True(RunTasksAndValidateSchedule(nConsumers, exampleTasks));
         }
@@ -74,10 +72,183 @@ namespace Feladat5 {
                     scheduler.AddTask(new RandomAvgTask(color, taskComplexity));
                 }
                 scheduler.JoinAndStopConsumerThreads();
-                bool valid = ScheduleValidator.Validate(log);
-                Assert.True(valid);
+                Assert.True(ScheduleValidator.IsValid(log));
             }
         }
+
+
+        [Test]
+        public void TestSameColors() {
+            int color = 0;
+            ResetSchedulerAndLog();
+            scheduler.StartConsumerThreads(10);
+            for (int taskComplexity = 10_000; taskComplexity <= 100_000; taskComplexity++)
+                scheduler.AddTask(new RandomAvgTask(color, taskComplexity));
+            scheduler.JoinAndStopConsumerThreads();
+            Assert.True(ScheduleValidator.IsValid(log));
+        }
+
+
+        [Test]
+        public void TestRule1() {
+            // Egy feladatot csak egy végrehajtónak szabad kiadni.
+            
+            ResetSchedulerAndLog();
+            scheduler.StartConsumerThreads(2);
+
+            var task1 = new RandomAvgTask(BLUE, 10_000);
+
+            for (int i = 0; i < 1000; i++)
+                scheduler.AddTask(new RandomAvgTask(0, 10_000));
+            
+            scheduler.JoinAndStopConsumerThreads();
+            
+            Assert.True(ScheduleValidator.IsValid(log));
+            
+        }
+
+
+        [Test]
+        public void TestRule2WhenTaskFails() {
+            // Ha a feladat végrehajtása valamilyen okból meghiúsul (pl. a végrehajtó szál elesik), a feladatot vissza kell tenni a végrehajtási sorba.
+            
+            int nTasks = 100;
+            int nColors = 5;
+            int nConsumerThreads = 6;
+            
+            ResetSchedulerAndLog();
+            scheduler.StartConsumerThreads(nConsumerThreads);
+
+            for (int i = 0; i < 100; i++) {
+                int color = i % nColors;
+                scheduler.AddTask(new RandomAvgTask(color, 10_000));
+            }
+
+            scheduler.AddTask(new OnceFailingTask(0, 10_000));
+            
+            for (int i = 0; i < 100; i++) {
+                int color = i % nColors;
+                scheduler.AddTask(new RandomAvgTask(color, 10_000));
+            }
+            
+            scheduler.JoinAndStopConsumerThreads();
+            
+            Assert.True(ScheduleValidator.IsValid(log));
+            
+        }
+
+
+        class OnceFailingTask : RandomAvgTask {
+
+            private bool hasFailedOnce = false;
+
+            public OnceFailingTask(int color, int n) : base(color, n) {}
+
+            public override void Run() {
+                base.Run();
+                if (!hasFailedOnce) {
+                    hasFailedOnce = true;
+                    throw new Exception("I'm failing intentionally!");
+                }
+            }
+            
+        }
+
+
+        [Test]
+        public void TestRule2WhenThreadAborted() {
+            // Ha a feladat végrehajtása valamilyen okból meghiúsul (pl. a végrehajtó szál elesik), a feladatot vissza kell tenni a végrehajtási sorba.
+            
+            int nTasks = 100;
+            int nColors = 5;
+            int nConsumerThreads = 6;
+            
+            ResetSchedulerAndLog();
+            scheduler.StartConsumerThreads(nConsumerThreads);
+
+            for (int i = 0; i < 100; i++) {
+                int color = i % nColors;
+                scheduler.AddTask(new RandomAvgTask(color, 10_000));
+            }
+
+            scheduler.AddTask(new OnceThreadAbortingTask(0, 10_000));
+            
+            for (int i = 0; i < 100; i++) {
+                int color = i % nColors;
+                scheduler.AddTask(new RandomAvgTask(color, 10_000));
+            }
+            
+            scheduler.JoinAndStopConsumerThreads();
+            
+            Assert.True(ScheduleValidator.IsValid(log));
+            
+        }
+
+
+        class OnceThreadAbortingTask : RandomAvgTask {
+
+            private bool hasAbortedThreadOnce = false;
+
+            public OnceThreadAbortingTask(int color, int n) : base(color, n) {}
+
+            public override void Run() {
+                base.Run();
+                if (!hasAbortedThreadOnce) {
+                    hasAbortedThreadOnce = true;
+                    Thread.CurrentThread.Abort();
+                }
+            }
+            
+        }
+
+
+        [Test]
+        public void TestRule3() {
+            // Az egész rendszerben egy adott színű feladatból egy időben csak egy lehet végrehajtás alatt.
+            
+            int nTasks = 50;
+            int nColors = 2;
+            int nConsumerThreads = 10;
+            
+            ResetSchedulerAndLog();
+            scheduler.StartConsumerThreads(nConsumerThreads);
+
+            for (int i = 0; i < 100; i++) {
+                int color = i % nColors;
+                scheduler.AddTask(new RandomAvgTask(color, 1_000_000));
+            }
+            
+            scheduler.JoinAndStopConsumerThreads();
+            
+            Assert.True(ScheduleValidator.IsValid(log));
+        }
+        
+
+
+        [Test]
+        public void TestRule4() {
+            // Egy adott színhez tartozó feladatokat a beadás sorrendjében kell végrehajtani.
+            
+            int nTasks = 50;
+            int nColors = 5;
+            int nConsumerThreads = 10;
+            
+            ResetSchedulerAndLog();
+            scheduler.StartConsumerThreads(nConsumerThreads);
+
+            for (int i = 0; i < 1000; i++) {
+                int color = i % (nColors - 1) + 1;
+                scheduler.AddTask(new RandomAvgTask(color, 1_000_000));
+                if (i % 10 == 0)
+                    scheduler.AddTask(new RandomAvgTask(0, 1_000_000));
+            }
+            
+            scheduler.JoinAndStopConsumerThreads();
+            
+            Assert.True(ScheduleValidator.IsValid(log));
+        }
+
+
 
         private long GetTimestamp() => DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
@@ -101,6 +272,8 @@ namespace Feladat5 {
             new Random(50).Shuffle(testParameters);
 
             using (var fileWriter = new StreamWriter($"results/throughput.csv")) {
+                
+                fileWriter.WriteLine("nConsumers;nColors;result");
                 
                 foreach (var param in testParameters) {
                     int nConsumers = param.Item1;
@@ -157,7 +330,7 @@ namespace Feladat5 {
                             int color = rand.Next(0, nColors);
                             scheduler.AddTask(new RandomAvgTask(color, taskComplexity));
                         }
-                    } catch (ThreadAbortException e) { /* ignored */ }
+                    } catch (ThreadAbortException) { }
                 });
                 
                 producer.Start();
@@ -168,9 +341,9 @@ namespace Feladat5 {
                 Thread.Sleep(milliseconds);
                 int finishedTasks = scheduler.FinishedTaskCount;
                 producer.Abort();
-                scheduler.AbortConsumerThreads();
+                scheduler.AbortAndJoinConsumerThreads();
                     
-                bool valid = ScheduleValidator.Validate(log);
+                bool valid = ScheduleValidator.IsValid(log);
                 if (!valid) {
                     Console.WriteLine();
                     Console.WriteLine("Full schedule:");
@@ -201,7 +374,7 @@ namespace Feladat5 {
             log = new List<TaskLogEntry>();
             scheduler = new TaskScheduler(
                 (task) => {
-                    //AddToLog(log, task, TaskLogEntryType.ADD);
+                    AddToLog(log, task, TaskLogEntryType.ADD);
                 },
                 (task) => AddToLog(log, task, TaskLogEntryType.START),
                 (task) => AddToLog(log, task, TaskLogEntryType.FINISH),
@@ -213,17 +386,20 @@ namespace Feladat5 {
         }
         
 
-        public static void Main(string[] args) {
+        /*public static void Main(string[] args) {
             SetThreadName();
-            var tests = new UnitTests();
+            var tests = new SchedulerTests();
             tests.InitTest();
-            //tests.scheduler.DebugMode = true;
+            printLog = true;
+            tests.scheduler.DebugMode = true;
             //tests.TheExampleTasks1();
             //tests.RandomThroughputTest(10, 5, 1000);
-            tests.RunThroughputTests();
+            //tests.TestRule2WhenTaskFails();
+            tests.TestRule2WhenThreadAborted();
+            ////tests.RunThroughputTests();
             //bool valid = tests.RunTasksAndValidateSchedule(2, exampleTasks);
             //Console.WriteLine("valid = " + valid);
-        }
+        }*/
         
         
 
@@ -239,7 +415,7 @@ namespace Feladat5 {
             scheduler.JoinAndStopConsumerThreads();
             //Console.WriteLine("tasks finished!");
 
-            return ScheduleValidator.Validate(log);
+            return ScheduleValidator.IsValid(log);
         }
 
 
