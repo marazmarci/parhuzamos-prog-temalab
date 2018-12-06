@@ -1,17 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using static TaskLogEntryType;
 
 namespace Feladat5 {
     
     public class ScheduleValidator {
         
-        public static bool Validate(List<TaskLogEntry> log) {
+        public static bool IsValid(List<TaskLogEntry> log) {
+            
             var colors = new HashSet<int>();
             var runningColors = new HashSet<int>();
             var taskToThreadMap = new Dictionary<Task, Thread>();
+            var failedTasks = new HashSet<Task>();
+            var failedTaskToLogEntryMap = new Dictionary<Task,TaskLogEntry>();
 
             bool rule1ok = true;
+            bool rule2ok = true;
             bool rule3ok = true;
             bool rule4ok = true;
 
@@ -30,7 +35,7 @@ namespace Feladat5 {
                 const string rule1 = "Egy feladatot csak egy végrehajtónak szabad kiadni.";
 
                 switch (type) {
-                    case TaskLogEntryType.START:
+                    case START:
                         if (taskToThreadMap.TryGetValue(task, out var _)) {
                             rule1ok = false;
                             PrintBadSchedule(entry, rule1);
@@ -39,7 +44,7 @@ namespace Feladat5 {
                             taskToThreadMap.Add(task, thread);
                         }
                         break;
-                    case TaskLogEntryType.FINISH:
+                    case FINISH:
                         if (taskToThreadMap.TryGetValue(task, out var starterThread)) {
                             var finisherThread = thread;
                             if (starterThread != finisherThread) {
@@ -52,22 +57,51 @@ namespace Feladat5 {
                             PrintBadSchedule(entry, "task finished without started!!?!");
                         }
                         break;
+                    case FAIL:
+                        if (taskToThreadMap.TryGetValue(task, out starterThread)) {
+                            var failedThread = thread;
+                            if (starterThread != failedThread) {
+                                rule1ok = false;
+                                PrintBadSchedule(entry, rule1);
+                            }
+                        } else {
+                            rule1ok = false;
+                            PrintBadSchedule(entry, rule1);
+                        }
+                        taskToThreadMap.Remove(task);
+                        break;
                 }
+
+
+                // CHECK RULE #2
+                // error message is printed at the end
+
+                switch (type) {
+                    case FAIL:
+                        failedTasks.Add(task);
+                        failedTaskToLogEntryMap.Add(task, entry);
+                        break;
+                    case START:
+                        failedTasks.Remove(task);
+                        failedTaskToLogEntryMap.Remove(task);
+                        break;
+                }
+                
 
 
                 // CHECK RULE #3:
 
-                const string rule3 =
-                    "Az egész rendszerben egy adott színű feladatból egy időben csak egy lehet végrehajtás alatt.";
+                const string rule3 = "Az egész rendszerben egy adott színű feladatból egy időben csak egy lehet végrehajtás alatt.";
 
                 if (runningColors.Contains(color)) {
                     switch (type) {
-                        case TaskLogEntryType.START:
+                        case START:
                             // not ok
                             rule3ok = false;
                             PrintBadSchedule(entry, rule3);
                             break;
-                        case TaskLogEntryType.FINISH:
+                        case FINISH:
+                        case FAIL:
                             // ok
                             runningColors.Remove(color);
                             break;
@@ -75,11 +109,12 @@ namespace Feladat5 {
                 }
                 else {
                     switch (type) {
-                        case TaskLogEntryType.START:
+                        case START:
                             // ok
                             runningColors.Add(color);
                             break;
-                        case TaskLogEntryType.FINISH:
+                        case FINISH:
+                        case FAIL:
                             // not ok
                             rule3ok = false;
                             PrintBadSchedule(entry, rule3);
@@ -96,20 +131,24 @@ namespace Feladat5 {
             foreach (var color in colors) {
                 int lastFinishId = -1;
                 int lastStartId = -1;
+                int prevLastStartId = -1;
+                //var failedTasks = new HashSet<Task>();
                 foreach (var entry in log) {
                     if (entry.Color == color) {
                         var id = entry.ID;
+                        var task = entry.Task;
 
                         switch (entry.Type) {
-                            case TaskLogEntryType.START:
+                            case START:
                                 if (id <= lastStartId) {
                                     // not ok
                                     rule4ok = false;
                                     PrintBadSchedule(entry, rule4);
                                 }
+                                prevLastStartId = lastStartId;
                                 lastStartId = id;
                                 break;
-                            case TaskLogEntryType.FINISH:
+                            case FINISH:
                                 if (id <= lastFinishId) {
                                     // not ok
                                     rule4ok = false;
@@ -117,12 +156,28 @@ namespace Feladat5 {
                                 }
                                 lastFinishId = id;
                                 break;
+                            case FAIL:
+                                lastStartId = prevLastStartId;
+                                break;
                         }
                     }
                 }
             }
+            
+            // CHECK RULE #2
+            
+            const string rule2 = "Ha a feladat végrehajtása valamilyen okból meghiúsul (pl. a végrehajtó szál elesik), a feladatot vissza kell tenni a végrehajtási sorba.";
 
-            return rule1ok && rule3ok && rule4ok;
+            if (failedTasks.Count != 0) {
+                foreach (var task in failedTasks) {
+                    var entry = failedTaskToLogEntryMap[task];
+                    PrintBadSchedule(entry, rule2);
+                }
+                rule2ok = false;
+            }
+            
+
+            return rule1ok && rule2ok && rule3ok && rule4ok;
         }
         
         private static void PrintBadSchedule(TaskLogEntry entry, string brokenRule) {
