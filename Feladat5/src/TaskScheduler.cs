@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
 using System.Threading;
@@ -23,7 +24,8 @@ namespace Feladat5 {
         
         private readonly UniqueQueue<int> idleColors = new UniqueQueue<int>();
         private readonly Dictionary<int, Deque<Task>> colorToIdleTaskDequeMap = new Dictionary<int, Deque<Task>>();
-        private readonly Dictionary<int, Task> runningTasksByColor = new Dictionary<int, Task>();
+        private readonly HashSet<int> runningColors = new HashSet<int>();
+        
         private readonly List<TaskConsumer> consumers = new List<TaskConsumer>();
         
         private int unfinishedTaskCount = 0;
@@ -32,6 +34,7 @@ namespace Feladat5 {
 
         private int taskIdCounter = 0;
         private bool stopped = true;
+        private bool aborted = false;
 
 
         public TaskScheduler(Action<Task> onTaskAdded, Action<Task> onTaskStarted, Action<Task> onTaskFinished, Action<Task,Exception> onTaskFailed) {
@@ -66,7 +69,10 @@ namespace Feladat5 {
             lock (lockObj) {
                 
                 unfinishedTaskCount++;
-                task.ID = taskIdCounter++;
+                
+                if (addToTail)
+                    task.ID = taskIdCounter++;
+                
                 var color = task.Color;
                 
                 if (!colorToIdleTaskDequeMap.TryGetValue(color, out var deque)) {
@@ -79,11 +85,13 @@ namespace Feladat5 {
                 else
                     deque.EnqueueHead(task);
                 
-                if (!runningTasksByColor.ContainsKey(color))
+                if (!runningColors.Contains(color))
                     idleColors.EnqueueIfNotContainsAlready(color);
-                
-                lock (outsideWorldLock) {
-                    onTaskAdded(task);
+
+                if (!addToTail) {
+                    lock (outsideWorldLock) {
+                        onTaskAdded(task);
+                    }
                 }
                 
                 PulseLockObj();                
@@ -95,7 +103,6 @@ namespace Feladat5 {
         // Ha épp nem áll rendelkezésre, akkor addig vár, amíg nem lesz
         // null-t ad vissza, ha le lett kell állnia a fogyasztónak
         private Task GetNextTask() {
-            //bool haveToWaitForTask = true;
             while (true) {
                 lock (lockObj) {
                     if (DebugMode) {
@@ -107,14 +114,14 @@ namespace Feladat5 {
                         return null;
                     if (!idleColors.IsEmpty()) {
                         var theColor = idleColors.Dequeue();
-                        Assert(!runningTasksByColor.ContainsKey(theColor));
+                        Assert(!runningColors.Contains(theColor));
                         bool found = colorToIdleTaskDequeMap.TryGetValue(theColor, out var idleTasksQueueOfTheColor);
                         Assert(found);
                         if (found) {
                             Assert(idleTasksQueueOfTheColor.Count > 0);
                             var task = idleTasksQueueOfTheColor.Dequeue();
                             Assert(task != null);
-                            runningTasksByColor.Add(theColor, task);
+                            runningColors.Add(theColor);
                             if (DebugMode) {
                                 lock (outsideWorldLock) {
                                     Console.WriteLine($"{Thread.CurrentThread.Name} GetNextTask returned {task}");
@@ -135,7 +142,7 @@ namespace Feladat5 {
         private void OnTaskFinished(Task task) {
             bool pulseJoinLockObj;
             lock (lockObj) {
-                AssertTaskRunning(task);
+                AssertColorRunning(task.Color);
                 RemoveTask(task);
                 finishedTaskCount++;
                 lock (outsideWorldLock) {
@@ -151,7 +158,7 @@ namespace Feladat5 {
         
 
         private void OnTaskStarted(Task task) {
-            AssertTaskRunning(task);
+            AssertColorRunning(task.Color);
             lock (outsideWorldLock) {
                 onTaskStarted(task);
             }
@@ -160,31 +167,30 @@ namespace Feladat5 {
 
         private void OnTaskFailed(Task task, Exception exception) {
             lock (lockObj) {
-                AssertTaskRunning(task);
-                RemoveTask(task);
-                lock (outsideWorldLock) {
-                    onTaskFailed(task, exception);
+                if (!aborted) {
+                    AssertColorRunning(task.Color);
+                    RemoveTask(task);
+                    lock (outsideWorldLock) {
+                        onTaskFailed(task, exception);
+                    }
+                    AddTask(task, false); // add it back to the head of the deque (not to the tail)
+                    unfinishedTaskCount--;
+                    //PulseLockObj();
                 }
-                PulseLockObj();
-                AddTask(task, false); // add it back to the head of the deque (not to the tail)
             }
         }
         
 
-        private void AssertTaskRunning(Task task) {
+        private void AssertColorRunning(int color) {
             if (!DebugMode)
                 return;
-            bool foundTask, foundColor;
-            Task runningTask;
-            var color = task.Color;
+            bool colorIdle, colorRunning;
             lock (lockObj) {
-                foundColor = idleColors.Contains(color);
-                foundTask = runningTasksByColor.TryGetValue(color, out runningTask);
+                colorIdle = idleColors.Contains(color);
+                colorRunning = runningColors.Contains(color);
             }
-            Assert(!foundColor);
-            Assert(foundTask);
-            Assert(runningTask != null);
-            Assert(task == runningTask);
+            Assert(!colorIdle);
+            Assert(colorRunning);
         }
         
 
@@ -225,7 +231,7 @@ namespace Feladat5 {
         private void RemoveTask(Task task) {
             lock (lockObj) {
                 var theColor = task.Color;
-                bool removed = runningTasksByColor.Remove(theColor);
+                bool removed = runningColors.Remove(theColor);
                 Assert(removed);
                 Assert(!idleColors.Contains(theColor));
                 bool ok = colorToIdleTaskDequeMap.TryGetValue(theColor, out var idleTaskQueueOfTheColor);
@@ -268,8 +274,9 @@ namespace Feladat5 {
             PulseLockObj(pulseAll: true);
         }
         
-        public void AbortConsumerThreads() {
+        public void AbortAndJoinConsumerThreads() {
             lock (lockObj) {
+                aborted = true;
                 unfinishedTaskCount = 0;
                 foreach (var consumer in consumers)
                     consumer.Abort();

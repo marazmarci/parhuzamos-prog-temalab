@@ -15,6 +15,8 @@ namespace Feladat5 {
             for (int i = 0; i < n; i++)
                 sum += rand.Next();
             long avg = sum / n;
+            if (avg == -1)
+                Console.WriteLine("asd");
         }
 
         public override string ToString() {
